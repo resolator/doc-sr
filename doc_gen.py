@@ -6,13 +6,17 @@ import numpy as np
 from pdf2image import convert_from_bytes
 
 
-def gen_word(word_len=5):
+def gen_word(word_len=5, word_chars=False):
     """Generate word from random characters with length word_len."""
-    return ''.join([chr(x) for x in np.random.choice(np.arange(33, 127),
-                                                     word_len)])
+    if word_chars:
+        char_range = np.concatenate([np.arange(65, 91), np.arange(97, 123)])
+    else:
+        char_range = np.arange(33, 127)
+
+    return ''.join([chr(x) for x in np.random.choice(char_range, word_len)])
 
 
-def gen_page(dpi=250, mean_word_len=5, font_size=14):
+def gen_page(dpi=250, mean_word_len=5, font_size=14, word_chars=False):
     """Generate page with random text.
 
     Parameters
@@ -24,6 +28,8 @@ def gen_page(dpi=250, mean_word_len=5, font_size=14):
         (randint from [1; mean_word_len * 2 + 1]).
     font_size : int
         Font size for generated text.
+    word_chars : bool
+        Generate only in-word characters.
 
     Returns
     -------
@@ -40,7 +46,8 @@ def gen_page(dpi=250, mean_word_len=5, font_size=14):
     # generate text
     generated_text = []
     while True:
-        word = gen_word(np.random.randint(1, mean_word_len * 2 + 1))
+        word = gen_word(np.random.randint(1, mean_word_len * 2 + 1),
+                        word_chars)
         pdf.write(pdf.font_size, word + ' ')
         if pdf.page != 1:
             break
