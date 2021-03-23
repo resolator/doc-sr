@@ -12,7 +12,7 @@ def gen_word(word_len=5):
                                                      word_len)])
 
 
-def gen_page(dpi=250, mean_word_len=5, font=None):
+def gen_page(dpi=250, mean_word_len=5, font_size=14):
     """Generate page with random text.
 
     Parameters
@@ -22,8 +22,8 @@ def gen_page(dpi=250, mean_word_len=5, font=None):
     mean_word_len : int
         Mean length of generated words
         (randint from [1; mean_word_len * 2 + 1]).
-    font : str
-        Name of font for fdpf.
+    font_size : int
+        Font size for generated text.
 
     Returns
     -------
@@ -35,10 +35,7 @@ def gen_page(dpi=250, mean_word_len=5, font=None):
     pdf.add_page()
 
     # select and set font
-    fonts = list(fpdf.fonts.fpdf_charwidths.keys())
-    if font is None:
-        font = np.random.choice(fonts)
-    pdf.set_font(font, size=14)
+    pdf.set_font('Courier', size=font_size)
 
     # generate text
     generated_text = []
