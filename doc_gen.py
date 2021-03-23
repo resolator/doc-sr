@@ -27,8 +27,8 @@ def gen_page(dpi=250, mean_word_len=5, font=None):
 
     Returns
     -------
-    array-like
-        Array of printed words.
+    (numpy.array, list)
+        An image with generated text and an array of generated words.
 
     """
     pdf = fpdf.FPDF()
