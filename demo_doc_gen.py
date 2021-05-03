@@ -3,6 +3,9 @@
 """Demonstrate the document generator."""
 import cv2
 import argparse
+
+from tqdm import tqdm
+from pathlib import Path
 from doc_gen import gen_page
 
 
@@ -17,6 +20,8 @@ def get_args():
                         help='Mean length of generated words.')
     parser.add_argument('--word-chars', action='store_true',
                         help='Generate only in-word characters.')
+    parser.add_argument('--save-to', type=Path,
+                        help='Path to save dir.')
 
     return parser.parse_args()
 
@@ -25,14 +30,28 @@ def main():
     """Application entry point."""
     args = get_args()
 
-    cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-    for i in range(args.img_count):
+    if args.save_to is not None:
+        args.save_to.mkdir(parents=True, exist_ok=True)
+
+    else:
+        cv2.namedWindow('img', cv2.WINDOW_NORMAL)
+
+    for i in tqdm(range(args.img_count)):
         img, text = gen_page(dpi=args.dpi,
                              mean_word_len=args.mean_word_len,
                              word_chars=args.word_chars)
-        print(text)
-        cv2.imshow('img', img)
-        cv2.waitKey()
+
+        if args.save_to is not None:
+            img_path = args.save_to.joinpath(str(i) + '.png')
+            txt_path = args.save_to.joinpath(str(i) + '.txt')
+
+            cv2.imwrite(str(img_path), img)
+            with open(txt_path, 'w') as f:
+                print(' '.join(text), file=f, end='')
+        else:
+            print(text)
+            cv2.imshow('img', img)
+            cv2.waitKey()
 
 
 if __name__ == '__main__':
