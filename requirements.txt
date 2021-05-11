@@ -9,3 +9,6 @@ scipy
 pytorch-lightning
 matplotlib
 wandb
+scikit-learn
+pybind11
+fastwer
