@@ -3,3 +3,9 @@ pdf2image
 fpdf
 opencv-python
 tqdm
+torch
+pillow
+scipy
+pytorch-lightning
+matplotlib
+wandb
