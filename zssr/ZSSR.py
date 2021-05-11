@@ -1,9 +1,9 @@
 import matplotlib.image as img
-from kernelgan_full.zssr.zssr_configs import Config
-from kernelgan_full.zssr.zssr_utils import *
+from zssr.zssr_configs import Config
+from zssr.zssr_utils import *
 import numpy as np
-#import tensorflow as tf
 import tensorflow.compat.v1 as tf
+from tqdm import tqdm
 tf.disable_v2_behavior()
 
 class ZSSR:
@@ -273,7 +273,7 @@ class ZSSR:
 
     def train(self):
         # main training loop
-        for self.iter in range(self.conf.max_iters):
+        for self.iter in tqdm(range(self.conf.max_iters), 'Training ZSSR'):
             # Use augmentation from original input image to create current father.
             # If other scale factors were applied before, their result is also used (hr_fathers_in)
             # crop_center = choose_center_of_crop(self.prob_map) if self.conf.choose_varying_crop else None

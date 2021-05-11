@@ -1,7 +1,7 @@
 import numpy as np
 from math import pi, sin, cos
 from cv2 import warpPerspective, INTER_CUBIC
-from kernelgan_full.imresize import imresize
+from imresize import imresize
 from scipy.ndimage import measurements, interpolation
 from scipy.io import loadmat
 from scipy.signal import convolve2d

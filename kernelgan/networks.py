@@ -5,8 +5,8 @@ import pytorch_lightning as pl
 
 import scipy.io as sio
 
-import kernelgan_full.kernelgan.loss as loss
-from kernelgan_full.kernelgan.util import swap_axis, zeroize_negligible_val, kernel_shift
+import kernelgan.loss as loss
+from kernelgan.util import swap_axis, zeroize_negligible_val, kernel_shift
 
 
 class Generator(nn.Module):

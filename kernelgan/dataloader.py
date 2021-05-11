@@ -4,8 +4,8 @@ from torch.utils.data import Dataset, DataLoader
 import pytorch_lightning as pl
 from PIL import Image
 
-from kernelgan_full.kernelgan.util import create_gradient_map, create_probability_map, nn_interpolation
-from kernelgan_full.imresize import imresize
+from kernelgan.util import create_gradient_map, create_probability_map, nn_interpolation
+from imresize import imresize
 
 
 class CropGenerator(Dataset):
@@ -24,8 +24,8 @@ class CropGenerator(Dataset):
         # self.image = self.image[10:-10, 10:-10, :]  # Crop pixels to avoid boundaries effects in synthetic examples
         # Crop pixels for the shape to be divisible by the scale factor
         sf = int(1 / self.scale_factor)
-        self.image = self.image[:-(shape[0] % sf), :, :] if self.image.shape[0] % sf > 0 else self.image
-        self.image = self.image[:, :-(shape[1] % sf), :] if self.image.shape[1] % sf > 0 else self.image
+        self.image = self.image[:-(self.image.shape[0] % sf), :, :] if self.image.shape[0] % sf > 0 else self.image
+        self.image = self.image[:, :-(self.image.shape[1] % sf), :] if self.image.shape[1] % sf > 0 else self.image
 
         self.in_rows, self.in_cols = self.image.shape[0:2]
 

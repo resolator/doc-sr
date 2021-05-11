@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
-from kernelgan_full.kernelgan.util import shave_a2b, resize_tensor_w_kernel, create_penalty_mask
+from kernelgan.util import shave_a2b, resize_tensor_w_kernel, create_penalty_mask
 
 
 # noinspection PyUnresolvedReferences
