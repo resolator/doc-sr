@@ -16,7 +16,8 @@ def gen_word(word_len=5, word_chars=False):
     return ''.join([chr(x) for x in np.random.choice(char_range, word_len)])
 
 
-def gen_page(dpi=250, mean_word_len=5, font_size=14, word_chars=False):
+def gen_page(dpi=250, mean_word_len=5, font_size=14, word_chars=False,
+             page_format='A5'):
     """Generate page with random text.
 
     Parameters
@@ -37,7 +38,7 @@ def gen_page(dpi=250, mean_word_len=5, font_size=14, word_chars=False):
         An image with generated text and an array of generated words.
 
     """
-    pdf = fpdf.FPDF()
+    pdf = fpdf.FPDF(format=page_format)
     pdf.add_page()
 
     # select and set font

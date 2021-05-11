@@ -20,6 +20,9 @@ def get_args():
                         help='Mean length of generated words.')
     parser.add_argument('--word-chars', action='store_true',
                         help='Generate only in-word characters.')
+    parser.add_argument('--page-format', default='A5',
+                        choices=['A3', 'A4', 'A5'],
+                        help='Page format for generation.')
     parser.add_argument('--save-to', type=Path,
                         help='Path to save dir.')
 
@@ -39,7 +42,8 @@ def main():
     for i in tqdm(range(args.img_count)):
         img, text = gen_page(dpi=args.dpi,
                              mean_word_len=args.mean_word_len,
-                             word_chars=args.word_chars)
+                             word_chars=args.word_chars,
+                             page_format=args.page_format)
 
         if args.save_to is not None:
             img_path = args.save_to.joinpath(str(i) + '.png')
