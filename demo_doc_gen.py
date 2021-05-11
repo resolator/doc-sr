@@ -29,10 +29,8 @@ def get_args():
     return parser.parse_args()
 
 
-def main():
+def main(args):
     """Application entry point."""
-    args = get_args()
-
     if args.save_to is not None:
         args.save_to.mkdir(parents=True, exist_ok=True)
 
@@ -59,4 +57,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    args = get_args()
+    main(args)

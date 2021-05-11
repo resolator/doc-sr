@@ -46,9 +46,8 @@ def train_kg(img_path, gan, max_iters=2750):
     gan.post_process_kernel()
 
 
-def main():
+def main(args):
     """Application entry point."""
-    args = get_args()
     args.save_to.mkdir(parents=True, exist_ok=True)
 
     for img_path in args.images_dir.glob('*.png'):
@@ -83,4 +82,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    args = get_args()
+    main(args)
