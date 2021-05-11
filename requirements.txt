@@ -12,3 +12,4 @@ wandb
 scikit-learn
 pybind11
 fastwer
+pyhton-Levenshtein
