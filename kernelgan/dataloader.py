@@ -87,4 +87,4 @@ class CropDataModule(pl.LightningDataModule):
         )
         
     def train_dataloader(self):
-        return DataLoader(self.data, batch_size=1)
+        return DataLoader(self.data, batch_size=100)

@@ -4,7 +4,6 @@
 import wandb
 import argparse
 
-import numpy as np
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
@@ -20,7 +19,7 @@ def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--images-dir', type=Path, required=True,
                         help='Path to dir with images for SR.')
-    parser.add_argument('--kg-max-iters', type=int, default=2750,
+    parser.add_argument('--kg-max-iters', type=int, default=13000,
                         help='Iterations for KernelGAN.')
     parser.add_argument('--noise-scale', type=float, default=1.0,
                         help='Noise scale for ZSSR.')
@@ -51,18 +50,19 @@ def main(args):
     args.save_to.mkdir(parents=True, exist_ok=True)
 
     for img_path in args.images_dir.glob('*.png'):
+        print(img_path)
         gan = KernelGAN()
         train_kg(img_path, gan, args.kg_max_iters)
-        kernel = gan.kernel
 
         try:
             sr = ZSSR(
                 img_path.absolute(),
                 scale_factor=2,
-                kernels=[kernel],
+                kernels=[gan.kernel],
                 is_real_img=True,
                 noise_scale=args.noise_scale
             ).run()
+
         except Exception:
             print('[ERROR]: failed ZSSR for', img_path)
             continue
@@ -77,7 +77,7 @@ def main(args):
             vmax=255 if sr.dtype == 'uint8' else 1.,
             dpi=1
         )
-        np.save(kernel_save_to, kernel)
+        gan.save_kernel(kernel_save_to)
 
 
 if __name__ == '__main__':
