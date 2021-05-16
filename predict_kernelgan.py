@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*
 """Script for predictions generation using KernelGan."""
-import torch
 import wandb
 import argparse
 
+import numpy as np
 import pytorch_lightning as pl
 import matplotlib.pyplot as plt
 
@@ -55,10 +55,6 @@ def main(args):
         train_kg(img_path, gan, args.kg_max_iters)
         kernel = gan.kernel
 
-        # clean memory
-        del gan
-        torch.cuda.empty_cache()
-
         try:
             sr = ZSSR(
                 img_path.absolute(),
@@ -68,10 +64,12 @@ def main(args):
                 noise_scale=args.noise_scale
             ).run()
         except Exception:
+            print('[ERROR]: failed ZSSR for', img_path)
             continue
 
         # save sr
         img_save_to = args.save_to.joinpath(img_path.name)
+        kernel_save_to = args.save_to.joinpath(img_path.name + '_kernel')
         plt.imsave(
             img_save_to,
             sr,
@@ -79,6 +77,7 @@ def main(args):
             vmax=255 if sr.dtype == 'uint8' else 1.,
             dpi=1
         )
+        np.save(kernel_save_to, kernel)
 
 
 if __name__ == '__main__':
