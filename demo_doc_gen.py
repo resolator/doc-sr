@@ -6,13 +6,17 @@ import argparse
 
 from tqdm import tqdm
 from pathlib import Path
+from itertools import cycle
 from doc_gen import gen_page
 
 
 def get_args():
     """Arguments parser."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--img-count', type=int, default=5,
+    parser.add_argument('--corpus-dir', type=Path,
+                        help='Path to "British National Corpus" dir to use '
+                             'words from it.')
+    parser.add_argument('--img-count', type=int, default=1,
                         help='Number of images to generate.')
     parser.add_argument('--dpi', type=int, default=250,
                         help='DPI for generated images.')
@@ -37,8 +41,14 @@ def main(args):
     else:
         cv2.namedWindow('img', cv2.WINDOW_NORMAL)
 
+    if args.corpus_dir is None:
+        xml_files = cycle([None])
+    else:
+        xml_files = cycle(list(args.corpus_dir.rglob('*.xml')))
+
     for i in tqdm(range(args.img_count)):
-        img, text = gen_page(dpi=args.dpi,
+        img, text = gen_page(corpus_xml_path=next(xml_files),
+                             dpi=args.dpi,
                              mean_word_len=args.mean_word_len,
                              word_chars=args.word_chars,
                              page_format=args.page_format)

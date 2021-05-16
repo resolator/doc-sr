@@ -3,6 +3,7 @@
 """Documents generator."""
 import fpdf
 import numpy as np
+from xml.etree import ElementTree as ET
 from pdf2image import convert_from_bytes
 
 
@@ -16,7 +17,88 @@ def gen_word(word_len=5, word_chars=False):
     return ''.join([chr(x) for x in np.random.choice(char_range, word_len)])
 
 
-def gen_page(dpi=250, mean_word_len=5, font_size=14, word_chars=False,
+def read_text_from_corpus(corpus_xml_path):
+    """Read page from "British National Corpus" xml.
+
+    Parameters
+    ----------
+    corpus_xml_path : pathlib.Path or str
+        Path to xml from "British National Corpus".
+
+    Returns
+    -------
+    iterator
+        Iterator of words from xml.
+
+    """
+    root = ET.parse(corpus_xml_path).getroot()
+
+    for page in root[1]:
+        for line in page:
+            for sub_line in line:
+                for word in sub_line:
+                    if isinstance(word.text, str):
+                        yield word.text
+                    else:
+                        for sub_word in word:
+                            if isinstance(sub_word.text, str):
+                                yield sub_word.text
+                if sub_line.tag == 'head':
+                    yield '\n'
+            if line.tag == 'head':
+                yield '\n'
+
+
+def init_pdf(font_size=12, page_format='A5'):
+    """Initialize pdf."""
+    assert page_format in ['A3', 'A4', 'A5'], \
+        'page format should be A3, A4 or A5.'
+
+    pdf = fpdf.FPDF(format=page_format)
+    pdf.add_page()
+
+    # select and set font
+    pdf.set_font('Courier', size=font_size)
+
+    return pdf
+
+
+def gen_text_from_xml(pdf, corpus_xml_path):
+    """Generate text from xml file and print on pdf."""
+    text = read_text_from_corpus(corpus_xml_path)
+    generated_text = []
+
+    for word in text:
+        # decode word to latin-1
+        try:
+            word.encode('latin-1')
+        except UnicodeEncodeError:
+            replacers = {'\u2013': '-',
+                         '—': '-',
+                         '‘': '\'',
+                         '’': '\'',
+                         '\u2026': '...',
+                         '\u0394': ''}
+            for k, v in replacers.items():
+                word = word.replace(k, v)
+
+        if word[-1] == '.':
+            word = word + ' '
+
+        pdf.write(pdf.font_size, word)
+        if pdf.page != 1:
+            break
+
+        generated_text.append(word)
+
+    return generated_text
+
+
+def gen_page(dpi=250,
+             corpus_xml_path=None,
+             mean_word_len=5,
+             font_size=12,
+             word_chars=False,
              page_format='A5'):
     """Generate page with random text.
 
@@ -24,6 +106,8 @@ def gen_page(dpi=250, mean_word_len=5, font_size=14, word_chars=False,
     ----------
     dpi : int
         DPI for generated image.
+    corpus_xml_path : pathlib.Path or str or None
+        Path to xml from "British National Corpus".
     mean_word_len : int
         Mean length of generated words
         (randint from [1; mean_word_len * 2 + 1]).
@@ -31,6 +115,8 @@ def gen_page(dpi=250, mean_word_len=5, font_size=14, word_chars=False,
         Font size for generated text.
     word_chars : bool
         Generate only in-word characters.
+    page_format : str
+        Page format (A3, A4, A5) for generation.
 
     Returns
     -------
@@ -38,21 +124,23 @@ def gen_page(dpi=250, mean_word_len=5, font_size=14, word_chars=False,
         An image with generated text and an array of generated words.
 
     """
-    pdf = fpdf.FPDF(format=page_format)
-    pdf.add_page()
-
-    # select and set font
-    pdf.set_font('Courier', size=font_size)
+    pdf = init_pdf(font_size, page_format)
 
     # generate text
     generated_text = []
-    while True:
-        word = gen_word(np.random.randint(1, mean_word_len * 2 + 1),
-                        word_chars)
-        pdf.write(pdf.font_size, word + ' ')
-        if pdf.page != 1:
-            break
-        generated_text.append(word)
+    if corpus_xml_path is not None:
+        while len(generated_text) < 30:
+            generated_text = gen_text_from_xml(pdf, corpus_xml_path)
+
+    else:
+        while True:
+            word = gen_word(np.random.randint(1, mean_word_len * 2 + 1),
+                            word_chars)
+            pdf.write(pdf.font_size, word + ' ')
+            if pdf.page != 1:
+                break
+
+            generated_text.append(word)
 
     # get image
     pdf.close()
