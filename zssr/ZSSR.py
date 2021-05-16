@@ -6,6 +6,7 @@ import tensorflow.compat.v1 as tf
 from tqdm import tqdm
 tf.disable_v2_behavior()
 
+
 class ZSSR:
     # Basic current state variables initialization / declaration
     kernel = None
@@ -226,11 +227,12 @@ class ZSSR:
         if (not (1 + self.iter) % self.conf.learning_rate_policy_check_every
                 and self.iter - self.learning_rate_change_iter_nums[-1] > self.conf.min_iters):
             # noinspection PyTupleAssignmentBalance
-            [slope, _], [[var, _], _] = np.polyfit(self.mse_steps[-int(self.conf.learning_rate_slope_range /
-                                                                       self.conf.run_test_every):],
-                                                   self.mse_rec[-int(self.conf.learning_rate_slope_range /
-                                                                     self.conf.run_test_every):],
-                                                   1, cov=True)
+            [slope, _], [[var, _], _] = np.polyfit(
+                self.mse_steps[-int(self.conf.learning_rate_slope_range / self.conf.run_test_every):],
+                self.mse_rec[-int(self.conf.learning_rate_slope_range / self.conf.run_test_every):],
+                1,
+                cov=True
+            )
 
             # We take the the standard deviation as a measure
             std = np.sqrt(var)
@@ -300,15 +302,16 @@ class ZSSR:
             self.train_output = self.forward_backward_pass(self.lr_son, self.hr_father, self.cropped_loss_map)
 
             # Test network
-            if self.conf.run_test and (not self.iter % self.conf.run_test_every):
-                self.quick_test()
+            # if self.conf.run_test and (not self.iter % self.conf.run_test_every):
+            #     self.quick_test()
 
             # Consider changing learning rate or stop according to iteration number and losses slope
-            self.learning_rate_policy()
+            # self.learning_rate_policy()
+            self.learning_rate *= 0.9975
 
             # stop when minimum learning rate was passed
-            if self.learning_rate < self.conf.min_learning_rate:
-                break
+            # if self.learning_rate < self.conf.min_learning_rate:
+            #     break
 
     def father_to_son(self, hr_father):
         # Create son out of the father by downscaling and if indicated adding noise

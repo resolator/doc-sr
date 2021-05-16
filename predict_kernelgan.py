@@ -19,7 +19,7 @@ def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--images-dir', type=Path, required=True,
                         help='Path to dir with images for SR.')
-    parser.add_argument('--kg-max-iters', type=int, default=13000,
+    parser.add_argument('--kg-max-iters', type=int, default=10000,
                         help='Iterations for KernelGAN.')
     parser.add_argument('--noise-scale', type=float, default=1.0,
                         help='Noise scale for ZSSR.')
@@ -55,13 +55,14 @@ def main(args):
         train_kg(img_path, gan, args.kg_max_iters)
 
         try:
-            sr = ZSSR(
+            zssr = ZSSR(
                 img_path.absolute(),
                 scale_factor=2,
                 kernels=[gan.kernel],
                 is_real_img=True,
                 noise_scale=args.noise_scale
-            ).run()
+            )
+            sr = zssr.run()
 
         except Exception:
             print('[ERROR]: failed ZSSR for', img_path)
