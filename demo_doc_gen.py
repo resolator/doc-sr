@@ -27,6 +27,8 @@ def get_args():
     parser.add_argument('--page-format', default='A5',
                         choices=['A3', 'A4', 'A5'],
                         help='Page format for generation.')
+    parser.add_argument('--font-size', type=int, default=12,
+                        help='Font size.')
     parser.add_argument('--save-to', type=Path,
                         help='Path to save dir.')
 
@@ -51,7 +53,8 @@ def main(args):
                              dpi=args.dpi,
                              mean_word_len=args.mean_word_len,
                              word_chars=args.word_chars,
-                             page_format=args.page_format)
+                             page_format=args.page_format,
+                             font_size=args.font_size)
 
         if args.save_to is not None:
             img_path = args.save_to.joinpath(str(i) + '.png')

@@ -78,7 +78,8 @@ def gen_text_from_xml(pdf, corpus_xml_path):
                          '‘': '\'',
                          '’': '\'',
                          '\u2026': '...',
-                         '\u0394': ''}
+                         '\u0394': '',
+                         '\u215b': '1/8'}
             for k, v in replacers.items():
                 word = word.replace(k, v)
 
