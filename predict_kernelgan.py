@@ -39,7 +39,6 @@ def train_kg(img_path, max_iters=2750, bs=4):
         bs=bs,
         max_iters=2 * bs
     )
-    rmtree('./models')
     Path('./models').mkdir(exist_ok=True)
     mc = pl.callbacks.model_checkpoint.ModelCheckpoint(
         dirpath='./models',
@@ -55,6 +54,7 @@ def train_kg(img_path, max_iters=2750, bs=4):
     )
     trainer.fit(gan, data_dl)
     gan = KernelGAN.load_from_checkpoint(mc.best_model_path).cuda()
+    rmtree('./models')
     wandb.finish()
     gan.post_process_kernel()
 
