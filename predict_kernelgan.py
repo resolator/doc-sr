@@ -19,7 +19,7 @@ def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--images-dir', type=Path, required=True,
                         help='Path to dir with images for SR.')
-    parser.add_argument('--kg-max-iters', type=int, default=10000,
+    parser.add_argument('--kg-max-iters', type=int, default=2500,
                         help='Iterations for KernelGAN.')
     parser.add_argument('--noise-scale', type=float, default=1.0,
                         help='Noise scale for ZSSR.')
@@ -29,20 +29,34 @@ def get_args():
     return parser.parse_args()
 
 
-def train_kg(img_path, gan, max_iters=2750):
+def train_kg(img_path, max_iters=2750, bs=4):
+    gan = KernelGAN()
     data_dl = CropDataModule(
         img_path=img_path,
         d_input_shape=gan.d_input_shape,
         d_forward_shave=gan.D.forward_shave,
-        max_iters=max_iters
+        bs=bs,
+        max_iters=2 * bs
     )
+    Path('./models').mkdir(exist_ok=True)
+    mc = pl.callbacks.model_checkpoint.ModelCheckpoint(
+        dirpath='./models',
+        monitor='train_loss',
+        filename='{epoch}-{train_loss:.5f}'
+    )
+
     trainer = pl.Trainer(
         gpus=1,
-        max_epochs=1
+        max_epochs=max_iters,
+        min_epochs=max_iters - 1,
+        callbacks=[mc]
     )
     trainer.fit(gan, data_dl)
+    gan = KernelGAN.load_from_checkpoint(mc.best_model_path)
     wandb.finish()
     gan.post_process_kernel()
+
+    return gan
 
 
 def main(args):
@@ -51,8 +65,8 @@ def main(args):
 
     for img_path in args.images_dir.glob('*.png'):
         print(img_path)
-        gan = KernelGAN()
-        train_kg(img_path, gan, args.kg_max_iters)
+
+        gan = train_kg(img_path, args.kg_max_iters)
 
         try:
             zssr = ZSSR(

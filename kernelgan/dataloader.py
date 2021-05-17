@@ -76,9 +76,9 @@ class CropGenerator(Dataset):
     
     
 class CropDataModule(pl.LightningDataModule):
-    def __init__(self, img_path, max_iters, d_input_shape, d_forward_shave):
+    def __init__(self, img_path, max_iters, d_input_shape, d_forward_shave, bs=4):
         super().__init__()
-        
+        self.bs = bs
         self.data = CropGenerator(
             img_path=img_path,
             d_input_shape=d_input_shape,
@@ -87,4 +87,4 @@ class CropDataModule(pl.LightningDataModule):
         )
         
     def train_dataloader(self):
-        return DataLoader(self.data, batch_size=4)
+        return DataLoader(self.data, batch_size=self.bs)

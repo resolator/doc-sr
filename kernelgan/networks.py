@@ -97,6 +97,8 @@ def weights_init_G(m):
 class KernelGAN(pl.LightningModule):
     def __init__(self):
         super().__init__()
+        self.last_g_loss = None
+        self.last_d_loss = None
         input_crop_size = 64
         self.G_kernel_size = 13
         self.D_kernel_size = 7
@@ -172,6 +174,7 @@ class KernelGAN(pl.LightningModule):
             loss_g = self.criterionGAN(d_last_layer=d_pred_fake, is_d_input_real=True)  # Calculate generator loss
             loss = loss_g + self.calc_constraints(g_pred)  # Sum all losses
             self.log('train/generator_loss', loss)
+            self.last_g_loss = loss.item()
 
         # train discriminator
         if optimizer_idx == 1:
@@ -186,6 +189,12 @@ class KernelGAN(pl.LightningModule):
             loss_d_real = self.criterionGAN(d_pred_real, is_d_input_real=True)
             loss = (loss_d_fake + loss_d_real) * 0.5
             self.log('train/discriminator_loss', loss)
+            self.last_d_loss = loss.item()
+
+        if self.last_d_loss is not None and self.last_g_loss is not None:
+            self.log('train_loss', (self.last_g_loss + self.last_d_loss) / 2)
+            self.last_g_loss = None
+            self.last_d_loss = None
 
         return loss
     
@@ -242,6 +251,7 @@ class KernelGAN(pl.LightningModule):
         opt_G = torch.optim.Adam(self.G.parameters(), lr=self.lr, betas=(self.beta1, 0.999))
         opt_D = torch.optim.Adam(self.D.parameters(), lr=self.lr, betas=(self.beta1, 0.999))
         
-        sched_G = torch.optim.lr_scheduler.StepLR(opt_G, self.step_size, gamma=0.1)
-        sched_D = torch.optim.lr_scheduler.StepLR(opt_D, self.step_size, gamma=0.1)
-        return [opt_G, opt_D], [sched_G, sched_D]
+        # sched_G = torch.optim.lr_scheduler.StepLR(opt_G, self.step_size, gamma=0.1)
+        # sched_D = torch.optim.lr_scheduler.StepLR(opt_D, self.step_size, gamma=0.1)
+        # return [opt_G, opt_D], [sched_G, sched_D]
+        return [opt_G, opt_D]
