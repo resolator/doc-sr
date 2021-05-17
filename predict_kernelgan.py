@@ -52,7 +52,8 @@ def train_kg(img_path, max_iters=2750, bs=4):
         callbacks=[mc]
     )
     trainer.fit(gan, data_dl)
-    gan = KernelGAN.load_from_checkpoint(mc.best_model_path)
+    gan = KernelGAN.load_from_checkpoint(mc.best_model_path).cuda()
+    gan.kernel = gan.calc_kernel()
     wandb.finish()
     gan.post_process_kernel()
 
