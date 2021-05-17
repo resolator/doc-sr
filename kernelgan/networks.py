@@ -197,6 +197,12 @@ class KernelGAN(pl.LightningModule):
             self.last_d_loss = None
 
         return loss
+
+    def on_save_checkpoint(self, ckpt):
+        ckpt['kernel'] = self.kernel
+
+    def on_load_checkpoint(self, ckpt):
+        self.kernel = ckpt['kernel']
     
     def on_train_batch_end(self, epoch_output, batch_end_outputs, batch, batch_idx):
         if batch_idx == 0:
