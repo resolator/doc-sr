@@ -19,7 +19,7 @@ def get_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--images-dir', type=Path, required=True,
                         help='Path to dir with images for SR.')
-    parser.add_argument('--kg-max-iters', type=int, default=2500,
+    parser.add_argument('--kg-max-iters', type=int, default=1300,
                         help='Iterations for KernelGAN.')
     parser.add_argument('--noise-scale', type=float, default=1.0,
                         help='Noise scale for ZSSR.')
