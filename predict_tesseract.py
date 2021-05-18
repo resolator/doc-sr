@@ -64,7 +64,7 @@ def main():
     args = get_args()
 
     args.save_to.mkdir(parents=True, exist_ok=True)
-    images_list = list(args.images_dir.glob('*.*'))
+    images_list = list(args.images_dir.glob('*.png'))
     for img_path in tqdm(images_list):
         text = ocr(img_path)
 
