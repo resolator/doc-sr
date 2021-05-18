@@ -4,6 +4,8 @@
 import fastwer
 import argparse
 
+import numpy as np
+
 from tqdm import tqdm
 from pathlib import Path
 from Levenshtein import distance as levenshtein_distance
@@ -16,6 +18,9 @@ def get_args():
                         help='Path to directory with gt.')
     parser.add_argument('--preds-dir', type=Path, required=True,
                         help='Path to directory with ocr predictions.')
+    parser.add_argument('--ref-dir', type=Path, required=True,
+                        help='Path to dir with KernelGAN sr images.')
+    parser.add_argument('--reject', type=float)
 
     return parser.parse_args()
 
@@ -25,7 +30,8 @@ def main():
     args = get_args()
 
     cers, lds = [], []
-    for pd_path in tqdm(list(args.preds_dir.glob('*.txt')), 'Evaluating'):
+    for ref_path in tqdm(list(args.ref_dir.glob('*.png')), 'Evaluating'):
+        pd_path = args.preds_dir.joinpath(ref_path.stem + '.txt')
         try:
             with open(pd_path, 'r') as f:
                 pd_text = f.read()
@@ -35,13 +41,20 @@ def main():
                 gt_text = f.read()
 
             cer = fastwer.score([pd_text], [gt_text], char_level=True)
+
+            if args.reject is not None:
+                if cer > args.reject:
+                    continue
+
             ld = levenshtein_distance(pd_text, gt_text)
             cers.append(cer)
             lds.append(ld)
         except Exception:
             continue
 
+    print('Total num:', len(cers))
     print('Mean CER:', sum(cers) / len(cers))
+    print('Median CER:', np.median(cers))
     print('Mean Levenshtein distance:', sum(lds) / len(lds))
 
 
