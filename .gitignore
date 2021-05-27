@@ -105,3 +105,12 @@ venv.bak/
 
 # PyCharm IDE files
 *.idea
+
+# data dir
+data/
+
+# lightning
+lightning_logs/
+*.png
+*.png_kernel
+*.ckpt
