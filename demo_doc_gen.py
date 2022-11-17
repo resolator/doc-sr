@@ -7,7 +7,7 @@ import argparse
 from tqdm import tqdm
 from pathlib import Path
 from itertools import cycle
-from doc_gen import gen_page
+from doc_gen import gen_page, gen_line
 
 
 def get_args():
@@ -25,7 +25,7 @@ def get_args():
     parser.add_argument('--word-chars', action='store_true',
                         help='Generate only in-word characters.')
     parser.add_argument('--page-format', default='A5',
-                        choices=['A3', 'A4', 'A5'],
+                        choices=['A3', 'A4', 'A5', 'line'],
                         help='Page format for generation.')
     parser.add_argument('--font-size', type=int, default=12,
                         help='Font size.')
@@ -48,25 +48,40 @@ def main(args):
     else:
         xml_files = cycle(list(args.corpus_dir.rglob('*.xml')))
 
+    max_text_len = 0
     for i in tqdm(range(args.img_count)):
-        img, text = gen_page(corpus_xml_path=next(xml_files),
-                             dpi=args.dpi,
-                             mean_word_len=args.mean_word_len,
-                             word_chars=args.word_chars,
-                             page_format=args.page_format,
-                             font_size=args.font_size)
+        if args.page_format == 'line':
+            img, text = gen_line(corpus_xml_path=next(xml_files),
+                                 size=(64, 900),
+                                 font_scale=1,
+                                 mean_word_len=args.mean_word_len,
+                                 word_chars=args.word_chars)
+        else:
+            img, text = gen_page(corpus_xml_path=next(xml_files),
+                                 dpi=args.dpi,
+                                 mean_word_len=args.mean_word_len,
+                                 word_chars=args.word_chars,
+                                 page_format=args.page_format,
+                                 font_size=args.font_size)
 
         if args.save_to is not None:
             img_path = args.save_to.joinpath(str(i) + '.png')
             txt_path = args.save_to.joinpath(str(i) + '.txt')
 
             cv2.imwrite(str(img_path), img)
+            sentence = ' '.join(text)
+            if len(sentence) > max_text_len:
+                max_text_len = len(sentence)
+
             with open(txt_path, 'w') as f:
-                print(' '.join(text), file=f, end='')
+                print(sentence, file=f, end='')
         else:
             print(text)
             cv2.imshow('img', img)
             cv2.waitKey()
+
+    if max_text_len > 0:
+        print('Max text length:', max_text_len)
 
 
 if __name__ == '__main__':

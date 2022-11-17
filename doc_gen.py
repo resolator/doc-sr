@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*
 """Documents generator."""
+import cv2
 import fpdf
 import numpy as np
 from xml.etree import ElementTree as ET
 from pdf2image import convert_from_bytes
+
+
+ALPHABET = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'i', 'k', 'm', 'n', 'o', 'p', 'q', 'r', 's', 'u', 'v', 'w', 'x', 'y', 'z']
 
 
 def gen_word(word_len=5, word_chars=False):
@@ -150,3 +154,57 @@ def gen_page(dpi=250,
     img = np.array(first_page)
 
     return img, generated_text
+
+
+def gen_line(corpus_xml_path,
+             size=(64, 900),
+             font_scale=1,
+             mean_word_len=5,
+             word_chars=False):
+    valid = False
+    img, sentence = None, None
+
+    while not valid:
+        img = (np.ones(size) * 255.0).astype(np.uint8)
+
+        total_words = np.random.randint(4, 9)
+        sentence = []
+        border_size = 30
+
+        if corpus_xml_path is not None:
+            text = read_text_from_corpus(corpus_xml_path)
+        else:
+            text = [''.join(np.random.choice(ALPHABET, np.random.randint(1, mean_word_len * 2 + 1)))
+                    for _ in range(total_words)]
+            # text = [gen_word(np.random.randint(1, mean_word_len * 2 + 1),
+            #                  word_chars) for _ in range(total_words)]
+
+        for word in text:
+            if word == '\n':
+                sentence[-1] = sentence[-1] + '.'
+            else:
+                sentence.append(word.replace(' ', ''))
+
+            if len(sentence) == total_words:
+                break
+
+        cv2.putText(
+            img,
+            ' '.join(sentence),
+            (border_size, 40),
+            cv2.FONT_HERSHEY_COMPLEX_SMALL,
+            font_scale,
+            (0, 0, 0),
+            1,
+            cv2.LINE_AA
+        )
+
+        # check
+        img_border = img[:, -border_size:]
+        needed_sum = (img_border.shape[0] * img_border.shape[1] * 255)
+        if img_border.sum() == needed_sum:
+            valid = True
+        else:
+            print('Not valid img, regenerating')
+
+    return img, sentence
